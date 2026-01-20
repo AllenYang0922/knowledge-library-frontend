@@ -654,7 +654,7 @@ export default {
     subtitle: "基于大模型的文档理解和语义搜索框架",
     registerSubtitle: "注册后系统将为您创建专属租户",
     emailPlaceholder: "输入邮箱地址",
-    passwordPlaceholder: "输入密码（8-32个字符，包含字母和数字）",
+    passwordPlaceholder: "输入密码",
     confirmPasswordPlaceholder: "再次输入密码",
     usernamePlaceholder: "输入用户名",
     emailRequired: "请输入邮箱地址",

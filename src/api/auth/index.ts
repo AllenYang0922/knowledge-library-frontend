@@ -2,38 +2,21 @@ import { post, get, put } from '@/utils/request'
 
 // 用户登录接口
 export interface LoginRequest {
-  email: string
-  password: string
+  account: string
+  user_password: string
 }
 
 export interface LoginResponse {
-  success: boolean
-  message?: string
-  user?: {
-    id: string
-    username: string
-    email: string
-    avatar?: string
-    tenant_id: number
-    can_access_all_tenants?: boolean
-    is_active: boolean
-    created_at: string
-    updated_at: string
-  }
-  tenant?: {
-    id: number
-    name: string
-    description: string
-    api_key: string
-    status: string
-    business: string
-    storage_quota: number
-    storage_used: number
-    created_at: string
-    updated_at: string
-  }
-  token?: string
-  refresh_token?: string
+  code: number
+  msg: string
+  data?: Array<{
+    user_id: string
+    account: string
+    user_name?: string
+    department_name?: string
+    privilege?: string
+  }>
+  access_token?: string
 }
 
 // 用户注册接口
@@ -116,15 +99,8 @@ export interface ModelInfo {
  * 用户登录
  */
 export async function login(data: LoginRequest): Promise<LoginResponse> {
-  try {
-    const response = await post('/api/v1/auth/login', data)
-    return response as unknown as LoginResponse
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.message || '登录失败'
-    }
-  }
+  const response = await post('/api/user/v1/login', data)
+  return response as unknown as LoginResponse
 }
 
 /**
@@ -207,17 +183,9 @@ export async function refreshToken(refreshToken: string): Promise<{ success: boo
  * 用户登出
  */
 export async function logout(): Promise<{ success: boolean; message?: string }> {
-  try {
-    await post('/api/v1/auth/logout', {})
-    return {
-      success: true
-    }
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.message || '登出失败'
-    }
-  }
+  // try {
+   const response = await post('/api/user/v1/logout', {})
+  return response as unknown as { success: boolean; message?: string }
 }
 
 /**

@@ -103,7 +103,7 @@ import { useRouter } from 'vue-router'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { MessagePlugin } from 'tdesign-vue-next'
-import { getCurrentUser, logout as logoutApi } from '@/api/auth'
+import { logout as logoutApi } from '@/api/auth'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -115,16 +115,10 @@ const authStore = useAuthStore()
 const menuRef = ref<HTMLElement>()
 const menuVisible = ref(false)
 
-// 用户信息
-const userInfo = ref({
-  username: '用户',
-  email: 'user@example.com',
-  avatar: ''
-})
-
-const userName = computed(() => userInfo.value.username)
-const userEmail = computed(() => userInfo.value.email)
-const userAvatar = computed(() => userInfo.value.avatar)
+// 用户信息（直接从 authStore 读取，带默认值）
+const userName = computed(() => authStore.user?.username || t('common.info'))
+const userEmail = computed(() => authStore.user?.email || 'user@example.com')
+const userAvatar = computed(() => authStore.user?.avatar || '')
 
 // 用户名首字母（用于无头像时显示）
 const userInitial = computed(() => {
@@ -182,57 +176,19 @@ const handleLogout = async () => {
   try {
     // 调用后端API注销
     await logoutApi()
+    console.log('注销成功')
+    // 清理所有状态和本地存储
+    authStore.logout()
+    
+    MessagePlugin.success(t('auth.logout'))
+    
+    // 跳转到登录页
+    router.push('/login')
   } catch (error) {
     // 即使API调用失败，也继续执行本地清理
     console.error('注销API调用失败:', error)
   }
   
-  // 清理所有状态和本地存储
-  authStore.logout()
-  
-  MessagePlugin.success(t('auth.logout'))
-  
-  // 跳转到登录页
-  router.push('/login')
-}
-
-// 加载用户信息
-const loadUserInfo = async () => {
-  try {
-    const response = await getCurrentUser()
-    if (response.success && response.data && response.data.user) {
-      const user = response.data.user
-      userInfo.value = {
-        username: user.username || t('common.info'),
-        email: user.email || 'user@example.com',
-        avatar: user.avatar || ''
-      }
-      // 同时更新 authStore 中的用户信息，确保包含 can_access_all_tenants 字段
-      authStore.setUser({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        tenant_id: user.tenant_id,
-        can_access_all_tenants: user.can_access_all_tenants || false,
-        created_at: user.created_at,
-        updated_at: user.updated_at
-      })
-      // 如果返回了租户信息，也更新租户信息
-      if (response.data.tenant) {
-        authStore.setTenant({
-          id: String(response.data.tenant.id),
-          name: response.data.tenant.name,
-          api_key: response.data.tenant.api_key || '',
-          owner_id: user.id,
-          created_at: response.data.tenant.created_at,
-          updated_at: response.data.tenant.updated_at
-        })
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load user info:', error)
-  }
 }
 
 // 点击外部关闭菜单
@@ -244,7 +200,6 @@ const handleClickOutside = (e: MouseEvent) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  loadUserInfo()
 })
 
 onUnmounted(() => {

@@ -283,24 +283,23 @@
           @submit="handleLogin"
           layout="vertical"
         >
-          <t-form-item :label="$t('auth.email')" name="email">
+          <t-form-item :label="$t('auth.username')" name="account">
             <t-input
-              v-model="formData.email"
-              :placeholder="$t('auth.emailPlaceholder')"
-              type="email"
+              v-model="formData.account"
+              :placeholder="$t('auth.usernamePlaceholder')"
               size="large"
               :disabled="loading"
             />
           </t-form-item>
 
-          <t-form-item :label="$t('auth.password')" name="password">
+          <t-form-item :label="$t('auth.password')" name="user_password">
             <t-input
-              v-model="formData.password"
+              v-model="formData.user_password"
               :placeholder="$t('auth.passwordPlaceholder')"
               type="password"
               size="large"
               :disabled="loading"
-              @keydown.enter="handleLogin"
+              @enter="handleLogin"
             />
           </t-form-item>
 
@@ -365,7 +364,7 @@
             />
           </t-form-item>
 
-          <t-form-item :label="$t('auth.email')" name="email">
+          <t-form-item :label="$t('auth.email')" name="account">
             <t-input
               v-model="registerData.email"
               :placeholder="$t('auth.emailPlaceholder')"
@@ -392,7 +391,7 @@
               type="password"
               size="large"
               :disabled="loading"
-              @keydown.enter="handleRegister"
+              @enter="handleRegister"
             />
           </t-form-item>
 
@@ -503,8 +502,8 @@ const currentLanguage = computed(() => locale.value)
 
 // Login form data
 const formData = reactive<{[key: string]: any}>({
-  email: '',
-  password: '',
+  account: '',
+  user_password: '',
 })
 
 // Register form data
@@ -517,16 +516,17 @@ const registerData = reactive<{[key: string]: any}>({
 
 // Login form validation rules
 const formRules = computed(() => ({
-  email: [
+  account: [
     { required: true, message: t('auth.emailRequired'), type: 'error' },
-    { email: true, message: t('auth.emailInvalid'), type: 'error' }
+    {
+      min: 3,
+      message: '至少需要三个字',
+      type: 'error',
+      trigger: 'blur',
+    },
   ],
-  password: [
+  user_password: [
     { required: true, message: t('auth.passwordRequired'), type: 'error' },
-    { min: 8, message: t('auth.passwordMinLength'), type: 'error' },
-    { max: 32, message: t('auth.passwordMaxLength'), type: 'error' },
-    { pattern: /[a-zA-Z]/, message: t('auth.passwordMustContainLetter'), type: 'error' },
-    { pattern: /\d/, message: t('auth.passwordMustContainNumber'), type: 'error' }
   ]
 }))
 
@@ -613,44 +613,36 @@ const handleLogin = async () => {
     loading.value = true
     
     const response = await login({
-      email: formData.email,
-      password: formData.password,
+      account: formData.account,
+      'user_password': formData.user_password,
     })
 
-    if (response.success) {
-      // Save user info and token
-      if (response.user && response.tenant && response.token) {
-          authStore.setUser({
-            id: response.user.id || '',
-            username: response.user.username || '',
-            email: response.user.email || '',
-            avatar: response.user.avatar,
-            tenant_id: String(response.tenant.id) || '',
-            can_access_all_tenants: response.user.can_access_all_tenants || false,
-            created_at: response.user.created_at || new Date().toISOString(),
-            updated_at: response.user.updated_at || new Date().toISOString()
-          })
-          authStore.setToken(response.token)
-          if (response.refresh_token) {
-            authStore.setRefreshToken(response.refresh_token)
-          }
-          authStore.setTenant({
-            id: String(response.tenant.id) || '',
-            name: response.tenant.name || '',
-            api_key: response.tenant.api_key || '',
-            owner_id: response.user.id || '',
-            created_at: response.tenant.created_at || new Date().toISOString(),
-            updated_at: response.tenant.updated_at || new Date().toISOString()
-          })
-        }
-      
-      MessagePlugin.success(t('auth.loginSuccess'))
+    if (response.code === 200) {
+      // Save user info and token (new backend shape: { code, msg, data: [user], access_token })
+      const firstUser = Array.isArray(response.data) ? response.data[0] : undefined
+      if (firstUser) {
+        authStore.setUser({
+          id: firstUser.user_id || '',
+          username: firstUser.user_name || firstUser.account || '',
+          email: firstUser.account || '',
+          avatar: undefined,
+          tenant_id: '',
+          can_access_all_tenants: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+      }
+      if (response.access_token) {
+        authStore.setToken(response.access_token)
+      }
+
+      MessagePlugin.success(response.msg || t('auth.loginSuccess'))
 
       // Wait for state update before redirect
       await nextTick()
       router.replace('/platform/knowledge-bases')
     } else {
-      MessagePlugin.error(response.message || t('auth.loginError'))
+      MessagePlugin.error(response.msg || t('auth.loginError'))
     }
   } catch (error: any) {
     console.error('登录错误:', error)
@@ -677,9 +669,9 @@ const handleRegister = async () => {
     if (response.success) {
       MessagePlugin.success(t('auth.registerSuccess'))
       
-      // Switch to login mode and fill in email
+      // Switch to login mode and fill in account
       isRegisterMode.value = false
-      formData.email = registerData.email
+      formData.account = registerData.email
       
       // Clear register form
       Object.keys(registerData).forEach(key => {
