@@ -397,6 +397,11 @@ export default {
       },
     },
   },
+  userManagement: {
+    title: 'User Management',
+    createUser: 'Create User',
+    description: 'User management, fully manage your system users, support user authentication and batch account operations.',
+  },
   settings: {
     title: 'Settings',
     modelConfig: 'Model Settings',

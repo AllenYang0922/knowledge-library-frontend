@@ -75,6 +75,12 @@ const router = createRouter({
           component: () => import("../views/chat/index.vue"),
           meta: { requiresInit: true, requiresAuth: true }
         },
+        {
+          path: "user-management",
+          name: "userManagement",
+          component: () => import("../views/userManagement/index.vue"),
+          meta: { requiresInit: true, requiresAuth: true }
+        },
       ],
     },
   ],

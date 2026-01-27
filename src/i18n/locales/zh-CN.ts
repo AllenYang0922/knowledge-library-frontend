@@ -927,6 +927,22 @@ export default {
       },
     },
   },
+  userManagement: {
+    title: "用户管理",
+    createUser: "新建用户",
+    description: "用户管理，全面管理您的系统用户，支持用户身份验证与批量账户操作。",
+    columns: {
+      userName: "用户名",
+      account: "账户",
+      departmentName: "部门",
+      privilege: "权限",
+      userId: "用户ID",
+      operation: "操作",
+      update: "修改用户",
+      delete: "删除用户",
+      deleteConfirm: "确定要删除此用户吗？",
+    },
+  },
   file: {
     upload: "上传文件",
     uploadSuccess: "文件上传成功",

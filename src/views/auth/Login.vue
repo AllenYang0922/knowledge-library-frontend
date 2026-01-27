@@ -619,19 +619,19 @@ const handleLogin = async () => {
 
     if (response.code === 200) {
       // Save user info and token (new backend shape: { code, msg, data: [user], access_token })
-      const firstUser = Array.isArray(response.data) ? response.data[0] : undefined
-      if (firstUser) {
-        authStore.setUser({
-          id: firstUser.user_id || '',
-          username: firstUser.user_name || firstUser.account || '',
-          email: firstUser.account || '',
-          avatar: undefined,
-          tenant_id: '',
-          can_access_all_tenants: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-      }
+      // const firstUser = response.data
+      // if (firstUser) {
+      authStore.setUser({
+        id: response.data.user_id || '',
+        username: response.data.user_name || response.data.account || '',
+        email: response.data.account || '',
+        avatar: undefined,
+        tenant_id: '',
+        can_access_all_tenants: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      // }
       if (response.access_token) {
         authStore.setToken(response.access_token)
       }

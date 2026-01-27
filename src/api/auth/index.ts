@@ -1,5 +1,18 @@
 import { post, get, put } from '@/utils/request'
 
+export interface User {
+  account: string;
+  department_name: string;
+  privilege: string;
+  user_id: string;
+  user_name: string;
+}
+
+interface UserListResponse {
+  code: number;
+  data: User[];
+}
+
 // 用户登录接口
 export interface LoginRequest {
   account: string
@@ -9,13 +22,13 @@ export interface LoginRequest {
 export interface LoginResponse {
   code: number
   msg: string
-  data?: Array<{
+  data: {
     user_id: string
     account: string
     user_name?: string
     department_name?: string
     privilege?: string
-  }>
+  }
   access_token?: string
 }
 
@@ -184,7 +197,7 @@ export async function refreshToken(refreshToken: string): Promise<{ success: boo
  */
 export async function logout(): Promise<{ success: boolean; message?: string }> {
   // try {
-   const response = await post('/api/user/v1/logout', {})
+  const response = await post('/api/user/v1/logout', {})
   return response as unknown as { success: boolean; message?: string }
 }
 
@@ -204,6 +217,43 @@ export async function validateToken(): Promise<{ success: boolean; valid?: boole
   }
 }
 
+// 用户管理模块
+// 获取用户列表
+export async function getUserList(): Promise<UserListResponse> {
+  try {
+    const response = await get('/api/user/v1/get/user');
+    console.log(222, response)
+    return response as unknown as UserListResponse;
+  } catch (error: any) {
+    throw new Error(error.message || '获取用户列表失败');
+  }
+}
 
+// 删除用户
+export async function deleteUser(userId: string): Promise<{ code: number; msg: string }> {
+  try {
+    const response = await post('/api/user/v1/del/user', { user_id: userId });
+    return response as unknown as { code: number; msg: string };
+  } catch (error: any) {
+    throw new Error(error.message || '删除用户失败');
+  }
+}
 
+// 更新用户
+export async function updateUser(
+  user_id: string,
+  department_id: number,
+  privilege_id: number
+): Promise<{ code: number; msg: string }> {
+  try {
+    const response = await post('/api/user/v1/update/user', {
+      user_id,
+      department_id,
+      privilege_id
+    });
+    return response as unknown as { code: number; msg: string };
+  } catch (error: any) {
+    throw new Error(error.message || '更新用户失败');
+  }
+}
 
