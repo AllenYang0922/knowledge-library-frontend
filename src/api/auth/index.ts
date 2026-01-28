@@ -222,7 +222,6 @@ export async function validateToken(): Promise<{ success: boolean; valid?: boole
 export async function getUserList(): Promise<UserListResponse> {
   try {
     const response = await get('/api/user/v1/get/user');
-    console.log(222, response)
     return response as unknown as UserListResponse;
   } catch (error: any) {
     throw new Error(error.message || '获取用户列表失败');

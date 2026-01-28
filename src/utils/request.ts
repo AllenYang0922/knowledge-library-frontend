@@ -54,7 +54,6 @@ let hasRedirectedOn401 = false;
 
 instance.interceptors.response.use(
   (response) => {
-    console.log('response: ', response);
     // 根据业务状态码处理逻辑
     const { status, data } = response;
     if (status === 200 || status === 201) {
@@ -109,8 +108,8 @@ instance.interceptors.response.use(
   }
 );
 
-export function get(url: string) {
-  return instance.get(url);
+export function get(url: string, params?: object) {
+  return instance.get(url, { params });
 }
 
 export async function getDown(url: string) {

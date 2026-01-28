@@ -3,8 +3,8 @@
         <!-- 头部（借鉴 KnowledgeBaseList.vue） -->
         <div class="header">
             <div class="header-title">
-                <h2>{{ $t('userManagement.title') || '用户管理' }}</h2>
-                <p class="header-subtitle">{{ $t('userManagement.description') || '用户管理功能开发中...' }}</p>
+                <h2>{{ $t('userManagement.title')}}</h2>
+                <p class="header-subtitle">{{ $t('userManagement.description') }}</p>
             </div>
         </div>
         <div class="header-divider"></div>
@@ -12,7 +12,7 @@
         <t-table row-key="user_id" :data="userList" :columns="columns">
             <template #operation="{ row }">
                 <div style="display: flex; gap: 20px;">
-                    <t-link theme="primary" hover="color">
+                    <t-link theme="primary" hover="color" @click="handleOpenUpdateUser(row)">
                         更新用户
                     </t-link>
                     <t-link theme="primary" hover="color" @click="handleDelete(row)">
@@ -24,7 +24,7 @@
 
         <UserEditorModal :visible="visible" :mode="editorMode" @update:visible="visible = $event" />
         <!-- <UserEditorModal :visible="visible" :mode="editorMode" :user="editingUser" @update:visible="visible = $event" @success="fetchUserList" /> -->
-
+        <UpdateUserDialog :visible="dialogVisible" :user="updatingUser" @update:visible="dialogVisible = $event" @success="fetchUserList" />
     </div>
 </template>
 
@@ -32,7 +32,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UserEditorModal from './UserEditorModal.vue'
-import { getUserList, deleteUser } from '@/api/auth'
+import UpdateUserDialog from './components/UpdateUserDialog.vue'
+import { getUserList, deleteUser,updateUser } from '@/api/auth'
 import type { User } from '@/api/auth'
 import type { TdBaseTableProps } from 'tdesign-vue-next'
 import { MessagePlugin } from 'tdesign-vue-next'
@@ -43,6 +44,8 @@ const editorMode = ref<'create' | 'edit'>('create')
 const userList = ref<User[]>([])
 const editingUser = ref<User | null>(null)
 const fixedRightColumn = ref(true)
+const dialogVisible = ref(false)
+const updatingUser = ref<User | null>(null)
 
 type Column = Exclude<TdBaseTableProps['columns'], undefined>[number];
 const columns: Column[] = [
@@ -74,6 +77,12 @@ const handleEdit = (user: User) => {
     editorMode.value = 'edit'
     editingUser.value = user
     visible.value = true
+}
+
+// 打开更新用户弹窗（把当前行传给弹窗）
+const handleOpenUpdateUser = (user: User) => {
+    updatingUser.value = user
+    dialogVisible.value = true
 }
 
 // 删除用户
@@ -114,6 +123,20 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('openUserEditor', handleOpenUserEditor as EventListener)
 })
+
+// 打开更新用户弹窗
+// const openUserEditor
+
+// 更新用户
+/* const handleUpdateUser = async (user: User) => {  
+    const res = await updateUser(user.user_id, user.department_id, user.privilege_id)
+    if (res.code === 200) {
+        MessagePlugin.success(t('common.updateSuccess'))
+        await fetchUserList()
+    } else {
+        MessagePlugin.error(t('common.updateFailed'))
+    }
+} */
 </script>
 
 <style lang="less" scoped>
