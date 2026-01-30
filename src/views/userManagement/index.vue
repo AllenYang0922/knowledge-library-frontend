@@ -15,15 +15,15 @@
                     <t-link theme="primary" hover="color" @click="handleOpenUpdateUser(row)">
                         更新用户
                     </t-link>
-                    <t-link theme="primary" hover="color" @click="handleDelete(row)">
-                        删除用户
-                    </t-link>
+                    <t-popconfirm content="确认删除用户吗" @confirm="handleDelete(row)">
+                        <t-button theme="primary" variant="text">删除用户</t-button>
+                    </t-popconfirm>
                 </div>
             </template>
         </t-table>
-
-        <UserEditorModal :visible="visible" :mode="editorMode" @update:visible="visible = $event" />
-        <!-- <UserEditorModal :visible="visible" :mode="editorMode" :user="editingUser" @update:visible="visible = $event" @success="fetchUserList" /> -->
+        <!-- 新增用户弹窗 -->
+        <UserEditorModal :visible="visible" :mode="editorMode" @update:visible="visible = $event" @success="fetchUserList" />
+        <!-- 更新用户弹窗 -->
         <UpdateUserDialog :visible="dialogVisible" :user="updatingUser" @update:visible="dialogVisible = $event" @success="fetchUserList" />
     </div>
 </template>

@@ -105,8 +105,8 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth !== false) {
     if (!authStore.isLoggedIn) {
       // 未登录，跳转到登录页面
-      next('/login')
-      return
+      // next('/login')
+      // return
     }
 
     // 验证Token有效性

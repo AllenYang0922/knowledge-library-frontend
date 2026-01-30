@@ -14,7 +14,7 @@ export interface GetDepartmentResponse {
   data: Department[];
 }
 
-export async function getDepartment(params: { department_id: number, query_depth: number }): Promise<GetDepartmentResponse> {
+export async function getDepartment(params: { department_id?: number, query_depth: number }): Promise<GetDepartmentResponse> {
   const response = await get('/api/user/v1/get/department', params);
   return response as unknown as GetDepartmentResponse;
 }

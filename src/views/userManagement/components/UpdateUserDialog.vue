@@ -20,7 +20,8 @@
           <span class="required-star">*</span>
           <span>部门</span>
         </template>
-        <t-cascader v-model="selectedDepartment" :options="departmentOptions" placeholder="请选择部门" clearable />
+        <t-cascader v-model="selectedDepartment" :options="departmentOptions" placeholder="请选择部门" clearable
+          check-strictly value-type="single" />
       </t-form-item>
     </t-form>
   </t-dialog>
@@ -49,6 +50,17 @@ interface DepartmentOption {
   value: number;
   children?: DepartmentOption[];
 }
+enum PrivilegeEnum {
+  'Admin' = 1,
+  'User' = 2,
+  'Guest' = 3,
+}
+
+const PrivilegeLabelMap: Record<PrivilegeEnum, string> = {
+  [PrivilegeEnum.Admin]: '管理员',
+  [PrivilegeEnum.User]: '用户',
+  [PrivilegeEnum.Guest]: '访客',
+};
 
 // 权限选项
 const selectedPrivilege = ref<number>();
@@ -95,7 +107,7 @@ const departmentsToOptions = (departments: Department[] | undefined | null): Dep
 // 获取部门
 const fetchDepartments = async () => {
   try {
-    const response: any = await getDepartment({ department_id: 1, query_depth: 0 });
+    const response: any = await getDepartment({ query_depth: 0 });
     if (response?.code === 200) {
       departmentOptions.value = departmentsToOptions(response.data);
     }
@@ -108,6 +120,8 @@ watch(
   () => props.visible,
   (val) => {
     if (val) {
+      selectedPrivilege.value = props.user?.privilege === PrivilegeLabelMap[PrivilegeEnum.Admin] ? PrivilegeEnum.Admin : props.user?.privilege === PrivilegeLabelMap[PrivilegeEnum.User] ? PrivilegeEnum.User : PrivilegeEnum.Guest;
+      
       fetchPrivileges();
       fetchDepartments();
     }
@@ -129,7 +143,9 @@ const handleCancel = () => {
 };
 
 const handleSubmit = async () => {
+  console.log('selectedDepartment.value: ', selectedDepartment.value);
   const res = await updateUser(props.user?.user_id || '', selectedDepartment.value as number, selectedPrivilege.value as number);
+  console.log('res: ', res);
   if (res.code === 200) {
     MessagePlugin.success('更新用户成功');
     emit('update:visible', false);

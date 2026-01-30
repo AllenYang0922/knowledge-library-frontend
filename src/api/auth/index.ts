@@ -238,6 +238,28 @@ export async function deleteUser(userId: string): Promise<{ code: number; msg: s
   }
 }
 
+// 添加用户
+export async function addUser(
+  account: string,
+  user_name: string,
+  user_password: string,
+  department_id: number,
+  privilege_id: number
+): Promise<{ code: number; data: string }> {
+  try {
+    const response = await post('/api/user/v1/add/user', {
+      account,
+      user_name,
+      user_password,
+      department_id,
+      privilege_id
+    });
+    return response as unknown as { code: number; data: string };
+  } catch (error: any) {
+    throw new Error(error.message || '添加用户失败');
+  }
+}
+
 // 更新用户
 export async function updateUser(
   user_id: string,
